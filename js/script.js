@@ -1,28 +1,36 @@
 //getting data from json file and calling tableOeration init method to initialise JS object.
 getData=()=>{
-  let xhr = new XMLHttpRequest();
-  let data;
-  xhr.open('GET','../data/users.json');
-  xhr.overrideMimeType("application/json");
-  //calling init method of tableOperation to get data after loading
-    xhr.onload = function(){
-        data = this.responseText;
-        data = JSON.parse(data);
-        tableOperation.init(data);
-    }
-xhr.send();
+    fetch('../data/users.json')
+    .then(
+        function(response) {
+            if (response.status != 200) {
+            console.log('Looks like there was a problem. Status Code: ' +
+            response.status);
+        return;
+        }
+
+// Examine the text in the response
+        response.json()
+        .then(function(data) {
+            tableOperation.init(data);
+            });
+        }
+    )
+    .catch(function(err) {
+    console.log('Fetch Error :-S', err);
+        });
 }
 
 //creating IIFE(Immediately Invoked Function Expression) with closure
 tableOperation = (function () {
-    let new_data;
+    let newData;
     
     return {
         init:function(data){
-            new_data = data;
+            newData = data;
         },
         createHeader: function(){
-            let table = document.getElementById("myTable"),row,celli,nameArray;
+            let table = document.getElementById("myTable"),row, nameArray;
             table.innerHTML = "";
             //craeting table first row
             table.style.border = "thin solid #000000";
@@ -43,7 +51,7 @@ tableOperation = (function () {
         },
         
         edit:function(row){
-            let ref = this,row_id,cancelButton,saveButton,dataArray,cells,cells_length,i;
+            let ref = this,row_id,cancelButton,saveButton,dataArray,cells,cellsLength,i;
             row.contentEditable = "true";
             row.style.backgroundColor = "#ccffff";
             row_id = row.rowIndex;
@@ -56,18 +64,18 @@ tableOperation = (function () {
             saveButton.setAttribute('name','save');
             saveButton.setAttribute('value','SAVE');
             saveButton.style.backgroundColor = " #adebad";
-            //craeting clone of cells
+            //creating clone of cells
             dataArray = new Array();
             cells = table.rows.item(row_id).cells;
-            cells_length = cells.length-2;
+            cellsLength = cells.length-2;
             
-            for(i=0;i<cells_length;i++){
+            for(i=0;i<cellsLength;i++){
                 dataArray.push(cells.item(i).innerText);
             }
            
             cancelButton.onclick = function(){
                 //revert the process as to change again to edit and copy the previous data to selected row
-                for(i=0;i<cells_length;i++){
+                for(i=0;i<cellsLength;i++){
                     cells.item(i).innerText = dataArray[i];
                  }
                 row.contentEditable = "false";
@@ -79,8 +87,7 @@ tableOperation = (function () {
                 saveButton.setAttribute('value','DELETE');
                 saveButton.style.backgroundColor = "#ff6666";
                 cancelButton.onclick = function() {
-                    ref.edit(row);
-
+                    ref.edit(row)
                 }
                 saveButton.onclick = function(){
                     document.getElementById("myTable").deleteRow(row.rowIndex);
@@ -107,46 +114,45 @@ tableOperation = (function () {
             
         },
         createTable:function() {
-            let table,ref = this,row, cell,buttonnode,buttonnode1,nameField,i;
+            let table,ref = this,row, cell,buttonNode,buttonNode1,nameField,i;
             table=this.createHeader();
             
-            for (i=1;i<=new_data.length;i++)
+            for (i=1;i<=newData.length;i++)
             {
                 row = table.insertRow(i);
                 row.id = i;
-                nameField = Object.values(new_data[i-1]);
+                nameField = Object.values(newData[i-1]);
                 for(j=0;j<nameField.length;j++)
                 {
                     cell = row.insertCell(j);
                     cell.innerHTML = nameField[j];
                     cell.style.padding = "5px";
                     cell.style.border = "thin solid #000000";
-   
                 }
                 
-                buttonnode1= document.createElement('input');
-                buttonnode1.setAttribute('type','button');
-                buttonnode1.setAttribute('name','EDIT');
-                buttonnode1.setAttribute('value','EDIT');
-                buttonnode1.style.fontWeight = "900";
-                buttonnode1.style.padding = "5px";
+                buttonNode1= document.createElement('input');
+                buttonNode1.setAttribute('type','button');
+                buttonNode1.setAttribute('name','EDIT');
+                buttonNode1.setAttribute('value','EDIT');
+                buttonNode1.style.fontWeight = "900";
+                buttonNode1.style.padding = "5px";
                 
-                buttonnode1.style.backgroundColor = "#ccebff";
-                row.insertCell(7).appendChild(buttonnode1);
+                buttonNode1.style.backgroundColor = "#ccebff";
+                row.insertCell(7).appendChild(buttonNode1);
                 
-                buttonnode= document.createElement('input');
-                buttonnode.setAttribute('type','button');
-                buttonnode.setAttribute('name','DELETE');
-                buttonnode.setAttribute('value','DELETE');
-                buttonnode.style.padding = "5px";
-                buttonnode.style.backgroundColor = "#ff6666";
-                buttonnode.style.fontWeight = "900";
-                row.insertCell(8).appendChild(buttonnode);
+                buttonNode= document.createElement('input');
+                buttonNode.setAttribute('type','button');
+                buttonNode.setAttribute('name','DELETE');
+                buttonNode.setAttribute('value','DELETE');
+                buttonNode.style.padding = "5px";
+                buttonNode.style.backgroundColor = "#ff6666";
+                buttonNode.style.fontWeight = "900";
+                row.insertCell(8).appendChild(buttonNode);
                 
-                buttonnode1.onclick = function (){
+                buttonNode1.onclick = function (){
                     ref.edit(this.parentNode.parentNode);
                 }
-                buttonnode.onclick = function (){
+                buttonNode.onclick = function (){
                     document.getElementById("myTable").deleteRow(this.parentNode.parentNode.rowIndex);
                 }   
                 
@@ -175,4 +181,3 @@ tableOperation = (function () {
 
 
 
-    
